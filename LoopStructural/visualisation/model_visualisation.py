@@ -320,6 +320,10 @@ class LavaVuModelViewer:
                 # svalues[:] = np.nan
                 try:
                     import meshio
+                    from matplotlib.colours import to_rgba
+
+                    colour_array = np.zeros(verts.shape[0],4)
+                    colour_array[:,:] = np.array(to_rgba(colour))[None,:]
                     meshio.write_points_cells(filename.format(name),
                     verts,
                     [("triangle", faces)]
