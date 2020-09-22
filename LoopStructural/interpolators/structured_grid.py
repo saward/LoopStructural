@@ -64,6 +64,24 @@ class StructuredGrid:
         return np.array([xx.flatten(order='F'), yy.flatten(order='F'),
                                zz.flatten(order='F')]).T
 
+    def get_elements(self):
+        """Get the global index of all nodes in a cell
+
+        Returns
+        -------
+        
+        """
+        x = np.arange(0, self.n_cell_x)
+        y = np.arange(0, self.n_cell_y)
+        z = np.arange(0, self.n_cell_z)
+
+        c_xi, c_yi, c_zi = np.meshgrid(x, y, z,indexing='ij')
+        c_xi = c_xi.flatten(order='F')
+        c_yi = c_yi.flatten(order='F')
+        c_zi = c_zi.flatten(order='F')
+        xi, yi, zi = self.cell_corner_indexes(c_xi, c_yi, c_zi)
+        gi = xi + yi * self.nsteps[0] + zi * self.nsteps[0] * self.nsteps[1]
+        return gi
     def barycentre(self):
         return self.cell_centres(np.arange(self.n_elements))
 

@@ -13,7 +13,8 @@ from LoopStructural.interpolators.finite_difference_interpolator import \
     FiniteDifferenceInterpolator as FDI
 from LoopStructural.interpolators.piecewiselinear_interpolator import \
     PiecewiseLinearInterpolator as PLI
-
+from LoopStructural.interpolators.finite_difference_fold_interpolator import \
+    FiniteDifferenceFoldInterpolator as FDIF
 try:
     from LoopStructural.interpolators.surfe_wrapper import \
         SurfeRBFInterpolator as Surfe
@@ -460,6 +461,27 @@ class GeologicalModel:
             logger.info("Creating regular grid with %i elements \n"
                         "for modelling using FDI" % grid.n_elements)
             return FDI(grid)
+        if interpolatortype == 'FDIF':
+            # find the volume of one element
+            ele_vol = box_vol / nelements
+            # calculate the step vector of a regular cube
+            step_vector = np.zeros(3)
+            step_vector[:] = ele_vol ** (1. / 3.)
+            # number of steps is the length of the box / step vector
+            nsteps = np.ceil((bb[1, :] - bb[0, :]) / step_vector).astype(int)
+            if np.any(np.less(nsteps, 3)):
+                logger.error("Cannot create interpolator: number of steps is too small")
+                return None
+            # create a structured grid using the origin and number of steps
+            grid_id = 'grid_{}'.format(nelements)
+            grid = self.support.get(grid_id, StructuredGrid(origin=bb[0, :],
+                                                            nsteps=nsteps,
+                                                            step_vector=step_vector))
+            if grid_id not in self.support:
+                self.support[grid_id] = grid
+            logger.info("Creating regular grid with %i elements \n"
+                        "for modelling using FDI" % grid.n_elements)
+            return FDIF(grid,kwargs['fold'])
 
         if interpolatortype == "DFI":  # "fold" in kwargs:
             nelements /= 5
@@ -578,7 +600,8 @@ class GeologicalModel:
             fold_frame = self.features[-1]
         assert type(fold_frame) == FoldFrame, "Please specify a FoldFrame"
         fold = FoldEvent(fold_frame,name='Fold_{}'.format(foliation_data))
-        fold_interpolator = self.get_interpolator("DFI", fold=fold, **kwargs)
+        interpolator = kwargs.get('interpolator','DFI')
+        fold_interpolator = self.get_interpolator(interpolator, fold=fold, **kwargs)
         series_builder = GeologicalFeatureInterpolator(
             interpolator=fold_interpolator,
             name=foliation_data)
