@@ -134,3 +134,4 @@ class FiniteDifferenceFoldInterpolator(FiniteDifferenceInterpolator):
         #     B = np.zeros(A.shape[0])
         #     idc = np.array(idc[:ncons, :])
         #     self.add_constraints_to_least_squares(A, B, idc)
+       

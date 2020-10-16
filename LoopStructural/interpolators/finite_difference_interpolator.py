@@ -340,3 +340,42 @@ class FiniteDifferenceInterpolator(DiscreteInterpolator):
                                               idc[inside, :]
                                               )
         return
+
+    def anisotropic_regularisation(self, anisotropy, operator, w):
+            """
+
+            Parameters
+            ----------
+            operator : Operator
+            w : double
+
+            Returns
+            -------
+
+            """
+             _
+            |_
+            |_|_|_|
+            # Define neighbour mask for x [First get the global indicies of the pairs of neighbours this should be an
+            # Nx27 array for 3d and an Nx9 array for 2d
+            mask = np.array([[-1,0,0,0,1,1,1,0],
+                             [0,1,0,-1,1,0,-1,-1,-2],
+                             [0,0,0,0,0,0,0,0 ]
+                            )
+            global_indexes = self.support.neighbour_global_indexes(mask)
+              # np.array([ii,jj]))
+
+            a = np.tile(operator.flatten(), (global_indexes.shape[1], 1))
+            idc = global_indexes.T
+
+            gi = np.zeros(self.support.n_nodes)
+            gi[:] = -1
+            gi[self.region] = np.arange(0, self.nx)
+            idc = gi[idc]
+            inside = ~np.any(idc == -1, axis=1)
+            B = np.zeros(global_indexes.shape[1])
+            self.add_constraints_to_least_squares(a[inside, :] * w,
+                                                B[inside],
+                                                idc[inside, :]
+                                                )
+            return

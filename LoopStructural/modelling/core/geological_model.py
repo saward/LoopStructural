@@ -387,7 +387,7 @@ class GeologicalModel:
             if featuretype == 'folded_strati':
                 self.create_and_add_folded_foliation(f)
 
-    def get_interpolator(self, interpolatortype='PLI', nelements=1e5,
+    def get_interpolator(self, interpolator_type='PLI', nelements=1e5,
                          buffer=0.2, **kwargs):
         """
         Returns an interpolator given the arguments, also constructs a
@@ -395,7 +395,7 @@ class GeologicalModel:
 
         Parameters
         ----------
-        interpolatortype : string
+        interpolator_type : string
             define the interpolator type
         nelements : int
             number of elements in the interpolator
@@ -575,7 +575,7 @@ class GeologicalModel:
         
         return fold_frame
 
-    def create_and_add_folded_foliation(self, foliation_data, fold_frame=None,
+    def create_and_add_folded_foliation(self, foliation_data, fold_frame=None,interpolator_type='DFI',
                                         **kwargs):
         """
         Create a folded foliation field from data and a fold frame
@@ -593,6 +593,7 @@ class GeologicalModel:
         feature : GeologicalFeature
             created geological feature
         """
+        
         self.parameters['features'].append(
             {'feature_type': 'fold_foliation', 'feature_name': foliation_data, 'fold_frame': fold_frame, **kwargs})
         if fold_frame is None:
@@ -600,8 +601,8 @@ class GeologicalModel:
             fold_frame = self.features[-1]
         assert type(fold_frame) == FoldFrame, "Please specify a FoldFrame"
         fold = FoldEvent(fold_frame,name='Fold_{}'.format(foliation_data))
-        interpolator = kwargs.get('interpolator','DFI')
-        fold_interpolator = self.get_interpolator(interpolator, fold=fold, **kwargs)
+        # interpolator = kwargs.get('interpolator_type','DFI')
+        fold_interpolator = self.get_interpolator( interpolator_type,fold=fold, **kwargs)
         series_builder = GeologicalFeatureInterpolator(
             interpolator=fold_interpolator,
             name=foliation_data)
